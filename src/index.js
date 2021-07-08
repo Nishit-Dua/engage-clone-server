@@ -22,22 +22,26 @@ const users = {};
 const Rooms = {};
 
 io.on("connection", (socket) => {
-  socket.on("join-room", (roomID) => {
-    if (users[roomID]) {
-      users[roomID].push(socket.id);
+  socket.on("join-room", ({ roomId, name }) => {
+    if (users[roomId]) {
+      users[roomId].push({ id: socket.id, name });
     } else {
-      users[roomID] = [socket.id];
+      users[roomId] = [{ id: socket.id, name }];
     }
-    Rooms[socket.id] = roomID;
-    const usersInThisRoom = users[roomID].filter((id) => id !== socket.id);
+
+    Rooms[socket.id] = roomId;
+    const usersInThisRoom = users[roomId].filter(
+      (user) => user.id !== socket.id
+    );
 
     socket.emit("all-users", usersInThisRoom);
   });
 
-  socket.on("signalling", ({ userToConnect, callerId, signal }) => {
+  socket.on("signalling", ({ userToConnect, callerId, signal, myName }) => {
     io.to(userToConnect).emit("user-joined", {
       signal: signal,
       callerId: callerId,
+      name: myName,
     });
   });
 
@@ -49,11 +53,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    const roomID = Rooms[socket.id];
-    let room = users[roomID];
-    if (room) {
-      room = room.filter((id) => id !== socket.id);
-      users[roomID] = room;
+    const roomId = Rooms[socket.id];
+    let allUsers = users[roomId];
+    if (allUsers) {
+      allUsers = allUsers.filter((user) => user.id !== socket.id);
+      users[roomId] = allUsers;
     }
     socket.broadcast.emit("user-left", { quiterId: socket.id });
   });

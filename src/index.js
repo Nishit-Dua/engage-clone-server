@@ -34,16 +34,16 @@ io.on("connection", (socket) => {
     socket.emit("all-users", usersInThisRoom);
   });
 
-  socket.on("sending signal", (payload) => {
-    io.to(payload.userToConnect).emit("user-joined", {
-      signal: payload.signal,
-      callerId: payload.callerId,
+  socket.on("signalling", ({ userToConnect, callerId, signal }) => {
+    io.to(userToConnect).emit("user-joined", {
+      signal: signal,
+      callerId: callerId,
     });
   });
 
-  socket.on("returning signal", (payload) => {
-    io.to(payload.callerId).emit("receiving returned signal", {
-      signal: payload.signal,
+  socket.on("signalling-back", ({ signal, callerId }) => {
+    io.to(callerId).emit("handshake", {
+      signal: signal,
       id: socket.id,
     });
   });

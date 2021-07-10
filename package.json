@@ -6,6 +6,7 @@
   "type": "module",
   "author": "nishit-dua",
   "scripts": {
+    "start": "node src/index.js",
     "dev": "nodemon dist/index",
     "watch": "tsc -w",
     "dev:js": "nodemon src/index.js"

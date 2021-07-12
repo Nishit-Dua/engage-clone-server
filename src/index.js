@@ -56,6 +56,16 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("hands", ({ id, state }) => {
+    const roomId = Rooms[id];
+    let allUsers = users[roomId];
+    if (allUsers) {
+      allUsers = allUsers.filter((user) => user.id !== id);
+      users[roomId] = allUsers;
+    }
+    socket.broadcast.emit("hands", { handymanId: id, state });
+  });
+
   socket.on("manual-disconnect", ({ id }) => {
     const roomId = Rooms[id];
     let allUsers = users[roomId];

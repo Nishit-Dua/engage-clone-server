@@ -22,11 +22,11 @@ const users = {};
 const Rooms = {};
 
 io.on("connection", (socket) => {
-  socket.on("join-room", ({ roomId, name }) => {
+  socket.on("join-room", ({ roomId, name, isAnonymous }) => {
     if (users[roomId]) {
-      users[roomId].push({ id: socket.id, name });
+      users[roomId].push({ id: socket.id, name, isAnonymous });
     } else {
-      users[roomId] = [{ id: socket.id, name }];
+      users[roomId] = [{ id: socket.id, name, isAnonymous }];
     }
 
     Rooms[socket.id] = roomId;
@@ -37,13 +37,17 @@ io.on("connection", (socket) => {
     socket.emit("all-users", usersInThisRoom);
   });
 
-  socket.on("signalling", ({ userToConnect, callerId, signal, myName }) => {
-    io.to(userToConnect).emit("user-joined", {
-      signal: signal,
-      callerId: callerId,
-      name: myName,
-    });
-  });
+  socket.on(
+    "signalling",
+    ({ userToConnect, callerId, signal, myName, isAnonymous }) => {
+      io.to(userToConnect).emit("user-joined", {
+        signal: signal,
+        callerId: callerId,
+        name: myName,
+        isAnonymous,
+      });
+    }
+  );
 
   socket.on("signalling-back", ({ signal, callerId }) => {
     io.to(callerId).emit("handshake", {
